@@ -1,26 +1,25 @@
 const App = () => {
-  const course = "Half Stack application deveopment"
-
-  const part1 = {
-    name: "Fundamental of React",
-    exercises: 10
-  }
-  const part2 = {
-    name: "Using props to pass data",
-    exercises: 7
-  }
-  const part3 = {
-    name: "State of a component",
-    exercises: 14
-  } 
+  const course = {
+    name : "Half Stack application deveopment",
+    parts : [{
+        name: "Fundamental of React",
+        exercises: 10
+      },{
+        name: "Using props to pass data",
+        exercises: 7
+      },
+      {
+        name: "State of a component",
+        exercises: 14
+      } 
+    ]
+  };
 
   return (
     <div>
-    <Header course = {course} />
-    <Content part = {part1} />
-    <Content part = {part2}/>
-    <Content part = {part3}/>
-    <Total exercises={[part1.exercises, part2.exercises, part3.exercises]} />
+    <Header course = {course.name} />
+    <Content parts = {course.parts} />
+    <Total exercises={course.parts.map(part => part.exercises)} />
     </div>
   );
 }
@@ -40,10 +39,10 @@ const Part = (props) => {
 }
 
 const Content = (props) => {
-  console.log("In content:", props)
+  console.log("In content:",props)
   return (
     <div>
-      <Part name={props.part.name} exercises={props.part.exercises} />
+     { props.parts.map((part) => <Part name={part.name} exercises={part.exercises} />)}
     </div>
   )
 }
