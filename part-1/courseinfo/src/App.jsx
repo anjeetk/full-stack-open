@@ -1,4 +1,13 @@
+import {useState} from 'react';
+
+
 const App = () => {
+    const [index, setIndex] = useState(0);
+    
+    setTimeout(() => {
+      setIndex(new Date().getSeconds());
+    }, 1000);
+
   const course = {
     name : "Half Stack application deveopment",
     parts : [{
@@ -17,6 +26,7 @@ const App = () => {
 
   return (
     <div>
+    <p>Index : {index}</p>
     <Header course = {course.name} />
     <Content parts = {course.parts} />
     <Total exercises={course.parts.map(part => part.exercises)} />
