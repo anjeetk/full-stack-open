@@ -2,13 +2,8 @@ import {useState} from 'react';
 
 
 const App = () => {
-    const [index, setIndex] = useState(0);
-    
-    setTimeout(() => {
-      setIndex(new Date().getSeconds());
-    }, 1000);
 
-  const course = {
+    const course = {
     name : "Half Stack application deveopment",
     parts : [{
         name: "Fundamental of React",
