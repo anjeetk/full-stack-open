@@ -1,4 +1,60 @@
-import Course from './components/course'
+function Header(props) {
+  console.log("In Header", props)
+  return <h1>{props.name}</h1>
+}
+
+function Content(props) {
+  console.log("In Content : ", props)
+
+  return (
+    <>
+      <Parts parts={props.parts} />
+      <Total exercises={props.parts.reduce((sum, part) => sum + part.exercises, 0)} />
+    </>
+  )
+}
+
+const Part = ({ name, exercises }) => {
+  return (
+    <p>
+      {name} {exercises}
+    </p>
+  )
+}
+
+function Parts({ parts }) {
+  return (
+    <>
+      {parts.map(part => (
+        <Part
+          key={part.id}
+          name={part.name}
+          exercises={part.exercises}
+        />
+      ))}
+      
+    </>
+  )
+}
+
+function Course(props) {
+  console.log(props)
+
+  return (
+    <>
+      <Header name={props.course.name} />
+      <Content parts={props.course.parts} />
+    </>
+  )
+}
+
+const Total =({exercises}) => {
+  return (
+    <>
+      <b>Total number of exercises : {exercises}</b>
+    </>
+  )
+}
 
 const App = () => {
   const courses = [
@@ -27,7 +83,7 @@ const App = () => {
           id: 4
         }
       ]
-    }, 
+    },
     {
       name: 'Node.js',
       id: 2,
@@ -46,13 +102,13 @@ const App = () => {
     }
   ]
 
-  // console.log(course.name)
   return (
-    <>
-    {courses.map(course => <Course course={course} />)}
-    </>
+    <div>
+      {courses.map(course => (
+        <Course key={course.id} course={course} />
+      ))}
+    </div>
   )
 }
-
 
 export default App

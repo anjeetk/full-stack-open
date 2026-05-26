@@ -1,0 +1,17 @@
+{
+  "name": "phonebook",
+  "version": "1.0.0",
+  "description": "This is backend part of phonebook app.",
+  "license": "ISC",
+  "author": "Anjeet Keshari",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "morgan": "^1.10.1"
+  }
+}
