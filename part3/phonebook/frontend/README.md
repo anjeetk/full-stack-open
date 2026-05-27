@@ -1,16 +1,24 @@
-# React + Vite
+# Phonebook
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+In this exercise, we created a simple phonebook.
 
-Currently, two official plugins are available:
+In this phonebook, users have the possibility to a add, update & delete a person as well as its phone number. Person's names are unique, which means that users cannot add names that already exist in the phonebook. A search field is also available in the app to filter the people by their name.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This initial state of the application is stored in a file `db.json`, which correspond to a list of users along with their numbers. This file is used by the tool `JSON Server` that acts as a backend server where the data are stored.
 
-## React Compiler
+## Start the application
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+To start an application, do the following :
 
-## Expanding the ESLint configuration
+```bash
+# Install dependancies
+$ yarn install
+# Start the JSON Server
+$ npx json-server --port 3001 --watch db.json
+# On another terminal, start the application
+$ yarn start
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+You can then access the app on : http://localhost:3000/
+
+You can also see the content of the JSON Server by heading to http://localhost:3001/persons

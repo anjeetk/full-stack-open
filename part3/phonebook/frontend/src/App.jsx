@@ -1,160 +1,184 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import axios from 'axios'
 
 import './index.css'
-import Filter from './components/Filter'
-import PersonForm from './components/PersonForm'
-import Persons from './components/Persons'
-import personServices from './services/persons'
-import Notification from './components/Notiffication'
 
-const App = () => {
+const countriesUrl = 'https://studies.cs.helsinki.fi/restcountries/api/all'
+const weatherApiKey = import.meta.env.VITE_OPENWEATHER_API_KEY || import.meta.env.VITE_SOME_KEY
 
-  const [persons, setPersons] = useState([])
-  const [newName, setNewName] = useState('')
-  const [newNumber, setNewNumber] = useState('')
-  const [search, setSearch] = useState('')
-  const [notification, setNotification] = useState(null)
-  const [notificationType, setNotificationType] = useState('success')
+const Search = ({ search, onSearchChange }) => (
+  <label className="search">
+    find countries
+    <input value={search} onChange={onSearchChange} />
+  </label>
+)
+
+const CountryList = ({ countries, onShowCountry }) => (
+  <ul className="country-list">
+    {countries.map(country => (
+      <li key={country.cca3}>
+        <span>{country.name.common}</span>
+        <button type="button" onClick={() => onShowCountry(country.name.common)}>
+          show
+        </button>
+      </li>
+    ))}
+  </ul>
+)
+
+const Weather = ({ country }) => {
+  const [weather, setWeather] = useState(null)
+  const [error, setError] = useState(null)
+
+  const capital = country.capital?.[0]
 
   useEffect(() => {
-    personServices
-      .getAll()
-      .then(initialPersons => {
-        setPersons(initialPersons)
-      })
-  }, [persons])
-
-  const addPerson = (event) => {
-    event.preventDefault()
-
-    const exists = persons.find(
-      person => person.name.toLowerCase() === newName.toLowerCase()
-    )
-
-    if (exists) {
-
-      const confirmUpdate = window.confirm(
-        `${newName} is already added to phonebook, replace the old number with a new one?`
-      )
-
-      if (!confirmUpdate) return
-
-      const updatedPerson = {
-        ...exists,
-        number: newNumber
-      }
-
-      personServices
-        .update(exists.id, updatedPerson)
-        .then(returnedPerson => {
-          setPersons(
-            persons.map(person =>
-              person.id !== exists.id
-                ? person
-                : returnedPerson
-            )
-          )
-        })
-
-      setNewName('')
-      setNewNumber('')
+    if (!capital || !weatherApiKey) {
       return
     }
 
-    const newPerson = {
-      name: newName,
-      number: newNumber
+    axios
+      .get('https://api.openweathermap.org/data/2.5/weather', {
+        params: {
+          q: capital,
+          appid: weatherApiKey,
+          units: 'metric',
+        },
+      })
+      .then(response => setWeather(response.data))
+      .catch(() => setError('Weather information is not available right now.'))
+  }, [capital])
+
+  if (!capital) {
+    return null
+  }
+
+  if (!weatherApiKey) {
+    return (
+      <section>
+        <h2>Weather in {capital}</h2>
+        <p>Set VITE_OPENWEATHER_API_KEY before starting the app to show weather.</p>
+      </section>
+    )
+  }
+
+  if (error) {
+    return (
+      <section>
+        <h2>Weather in {capital}</h2>
+        <p>{error}</p>
+      </section>
+    )
+  }
+
+  if (!weather) {
+    return (
+      <section>
+        <h2>Weather in {capital}</h2>
+        <p>Loading weather...</p>
+      </section>
+    )
+  }
+
+  const icon = weather.weather?.[0]?.icon
+  const iconDescription = weather.weather?.[0]?.description
+
+  return (
+    <section>
+      <h2>Weather in {capital}</h2>
+      <p>temperature {weather.main.temp} Celsius</p>
+      {icon && (
+        <img
+          className="weather-icon"
+          src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
+          alt={iconDescription}
+        />
+      )}
+      <p>wind {weather.wind.speed} m/s</p>
+    </section>
+  )
+}
+
+const CountryDetails = ({ country }) => {
+  const languages = Object.values(country.languages ?? {})
+
+  return (
+    <article className="country-details">
+      <h1>{country.name.common}</h1>
+      <p>capital {country.capital?.join(', ')}</p>
+      <p>area {country.area}</p>
+
+      <h2>languages</h2>
+      <ul className="languages">
+        {languages.map(language => (
+          <li key={language}>{language}</li>
+        ))}
+      </ul>
+
+      <img className="flag" src={country.flags.png} alt={country.flags.alt || `Flag of ${country.name.common}`} />
+
+      <Weather key={country.cca3} country={country} />
+    </article>
+  )
+}
+
+const Countries = ({ countries, onShowCountry }) => {
+  if (countries.length > 10) {
+    return <p>Too many matches, specify another filter</p>
+  }
+
+  if (countries.length > 1) {
+    return <CountryList countries={countries} onShowCountry={onShowCountry} />
+  }
+
+  if (countries.length === 1) {
+    return <CountryDetails country={countries[0]} />
+  }
+
+  return <p>No matches found</p>
+}
+
+const App = () => {
+  const [countries, setCountries] = useState([])
+  const [search, setSearch] = useState('')
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    axios
+      .get(countriesUrl)
+      .then(response => setCountries(response.data))
+      .catch(() => setError('Could not load countries. Please try again later.'))
+  }, [])
+
+  const matchingCountries = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase()
+
+    if (!normalizedSearch) {
+      return []
     }
 
-    personServices
-      .create(newPerson)
-      .then(returnedPerson => {
-        setPersons(persons.concat(returnedPerson))
-
-        setNotification(
-          `${returnedPerson.name} Added in phonebook`
-        )
-        setNotificationType('success')
-
-        setTimeout(() => {
-          setNotification(null)
-        }, 5000)
-            setNewName('')
-            setNewNumber('')
-      })
-  }
-
-  const deletePerson = (id) => {
-
-    const person = persons.find(p => p.id === id)
-
-    const confirmDelete = window.confirm(
-      `Delete ${person.name}?`
+    return countries.filter(country =>
+      country.name.common.toLowerCase().includes(normalizedSearch)
     )
+  }, [countries, search])
 
-    if (!confirmDelete) return
-
-    personServices
-      .remove(id)
-      .then(() => {
-        setPersons(
-          persons.filter(person => person.id !== id)
-        )
-        setMessage('Successfully deleted.')
-        setTimeout(() => setMessage(''), 2000)
-      })
-      
-  }
-
-  const handleNameChange = (event) => {
-    setNewName(event.target.value)
-  }
-
-  const handleNumberChange = (event) => {
-    setNewNumber(event.target.value)
-  }
-
-  const handleSearch = (event) => {
+  const handleSearchChange = event => {
     setSearch(event.target.value)
   }
 
-  const personsToShow = persons.filter(person =>
-    person.name.toLowerCase().includes(search.toLowerCase())
-  )
+  const handleShowCountry = countryName => {
+    setSearch(countryName)
+  }
 
   return (
-    <div>
-      <h1>Welcome in Our Application!!</h1>
-
-      <h2>Phonebook</h2>
-
-      <Notification
-        message={notification}
-        type={notificationType}
-      />
-
-      <Filter
-        search={search}
-        handleSearch={handleSearch}
-      />
-
-      <h2>Add a new</h2>
-
-      <PersonForm
-        addPerson={addPerson}
-        newName={newName}
-        handleNameChange={handleNameChange}
-        newNumber={newNumber}
-        handleNumberChange={handleNumberChange}
-      />
-
-      <h2>Numbers</h2>
-
-      <Persons
-        persons={personsToShow}
-        deletePerson={deletePerson}
-      />
-    </div>
+    <main>
+      <Search search={search} onSearchChange={handleSearchChange} />
+      {error ? (
+        <p>{error}</p>
+      ) : (
+        <Countries countries={matchingCountries} onShowCountry={handleShowCountry} />
+      )}
+    </main>
   )
 }
 

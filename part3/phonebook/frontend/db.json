@@ -1,25 +1,24 @@
 {
   "persons": [
     {
-      "name": "Ada Lovelace",
-      "number": "39-44-5323523",
-      "id": "2"
+      "name": "Zlatan ibra",
+      "number": "46-643-463",
+      "id": 5
     },
     {
-      "name": "Dan Abramov",
-      "number": "12-43-234345",
-      "id": "3"
+      "name": "ToTorz",
+      "number": "56-443-63",
+      "id": 7
     },
     {
-      "name": "Mary Poppendieck",
-      "number": "39-23-6423122",
-      "id": "4"
+      "name": "Jean Dujardin",
+      "number": "86-865-8656",
+      "id": 8
     },
     {
-      "name": "Anjeet Keshari",
-      "number": "82325235",
-      "id": "3tymlxUiK6c"
+      "name": "totoro",
+      "number": "64-635-8375",
+      "id": 9
     }
-  ],
-  "$schema": "./node_modules/json-server/schema.json"
+  ]
 }

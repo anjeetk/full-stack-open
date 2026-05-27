@@ -1,19 +1,30 @@
 const express = require("express")
 const morgan = require('morgan')
-
-app = express()
+const app = express()
 
 app.use(express.json())
+app.use(cors())
 
-morgan.token('body', (req) => {
-  return JSON.stringify(req.body);
-});
+app.use(morgan(function (tokens, req, res) {
+  return [
+    tokens.method(req, res),
+    tokens.url(req, res),
+    tokens.status(req, res),
+    JSON.stringify(req.body),
+    tokens.res(req, res, 'content-length'), '-',
+    tokens['response-time'](req, res), 'ms'
+  ].join(' ')
+}))
 
-const logger = morgan(
-  ':method :url :status :response-time ms - body: :body'
-);
+const requestLogger = (req, res, next) => {
+    console.log('Method :', req.method)
+    console.log('Body :', req.body)
+    console.log('Path :', req.path)
+    console.log('----')
+    next();
+}
 
-app.use(logger);
+app.use(requestLogger)
 
 let persons = [
     { 
@@ -38,63 +49,55 @@ let persons = [
     }
 ]
 
-app.get('/', (req, res) => res.send('Hello world'))
+app.get('/', (req, res) => {
+    res.send("<h1>Welcome to phonebook app</h1>")
+})
 
 app.get('/api/persons', (req, res) => {
-    res.json(persons);
+    res.json(persons)
+})
+
+app.get('/api/persons/:id', (req, res)=>{
+    const id = req.params.id
+    const note = persons.find(person => person.id === id)
+    if(note){
+        res.status(200).send(note)
+    }else{
+        res.status(404).send("<p>data not found</p>")
+    }
+})
+
+app.delete('/api/persons/:id', (req, res) => {
+    const id = Number(req.params.id)
+    persons = persons.filter(person => person.id !== id)
+    res.status(204).end()
 })
 
 app.get('/info', (req, res) => {
-    const people = persons.length
-    const currDate = new Date()
-
-    res.status(200).send(`phonebook has info of ${people} peoples\n\n`+currDate)
+    const date = new Date()
+    res.send(`<p>Phonebook has information of ${persons.length} peoples</p>
+            <p>${date}</p>`)
 })
-
-app.get('/info/:id', (req, res) => {
-    const people = persons.length
-    const id = req.params.id;
-    if(id > people) res.status(404).send('Invalid id')
-    res.status(200).json(persons[id - 1])
-})
-
-app.delete('/info/:id', (req, res) => {
-    const id = req.params.id;
-
-    const personExists = persons.some(person => person.id === id);
-
-    if (!personExists) {
-        return res.status(404).send('Invalid id');
-    }
-
-    persons = persons.filter(person => person.id !== id);
-
-    console.log(persons);
-
-    res.status(200).send('Successfully deleted');
-});
 
 app.post('/api/persons', (req, res) => {
-  let obj = req.body;
+    let name = req.body?.name
+    let number = req.body?.number
 
-  if(!obj.name || !obj.number){
-    return res.status(400).send('name or number is missing.')
-  }
+    if(!name || !number){
+        res.status(400).send("Name or number is missing")
+    }
 
-  const exist = persons.some(person => person.name === obj.name)
+    let isExist = persons.find(person => person.name === name)
 
-  if(exist){
-    return res.status(400).json({ error: 'name must be unique' })
-  }
-  obj = {'id' : parseInt(Math.random() * (persons.length , persons.length + 5) + persons.length), ...obj}
-  persons.push(obj)
+    if(isExist)
+        res.status(400).json({'error' : "name must be unique"})
 
-  console.log(persons)
-  res.status(201).send(obj.name+ ' added in database')
+    newPerson = { id : parseInt(Math.random() * 100), name, number}
+    console.log(newPerson)
+    persons = persons.concat(newPerson)
+    console.log(persons)
+    res.status(200).send('Data inserted successfully')
 })
+const PORT = 3001
 
-
-const PORT = process.env.PORT || 3001
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+app.listen(PORT, () => console.log(`Backend is running on ${PORT}`))
