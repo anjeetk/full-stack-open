@@ -1,5 +1,5 @@
 import axios from 'axios'
-const baseUrl = 'http://127.0.0.1:3001'
+const baseUrl = 'https://full-stack-open-2-qcx4.onrender.com'
 
 const getAll = () => {
   const request = axios.get(`${baseUrl}/api/persons`)
