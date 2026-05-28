@@ -1,9 +1,11 @@
 const express = require("express")
 const morgan = require('morgan')
+const cors = require('cors')
 const app = express()
 
 app.use(express.json())
 app.use(cors())
+app.use(express.static('dist'))
 
 app.use(morgan(function (tokens, req, res) {
   return [
@@ -29,22 +31,22 @@ app.use(requestLogger)
 let persons = [
     { 
       "id": "1",
-      "name": "Arto Hellas", 
+      "name": "Anjeet Keshari", 
       "number": "040-123456"
     },
     { 
       "id": "2",
-      "name": "Ada Lovelace", 
+      "name": "Ritika Maurya", 
       "number": "39-44-5323523"
     },
     { 
       "id": "3",
-      "name": "Dan Abramov", 
+      "name": "Ganga", 
       "number": "12-43-234345"
     },
     { 
       "id": "4",
-      "name": "Mary Poppendieck", 
+      "name": "Rama", 
       "number": "39-23-6423122"
     }
 ]
@@ -98,6 +100,6 @@ app.post('/api/persons', (req, res) => {
     console.log(persons)
     res.status(200).send('Data inserted successfully')
 })
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 
 app.listen(PORT, () => console.log(`Backend is running on ${PORT}`))
